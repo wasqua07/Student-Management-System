@@ -1,8 +1,12 @@
 package com.wasqua.student_management;
+import com.wasqua.student_management.dto.StudentResponseDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import jakarta.validation.Valid;
+import com.wasqua.student_management.dto.StudentRequestDTO;
+
+
 
 
 @RestController
@@ -35,26 +39,32 @@ public class HelloController{
 
 
     @PostMapping("/student")
-    public Student addStudent(@Valid @RequestBody Student student) {
-        return studentService.saveStudent(student);
+    public StudentResponseDTO addStudent(@Valid @RequestBody StudentRequestDTO studentRequestDTO) {
+        return studentService.saveStudent(studentRequestDTO);
     }
 
     @GetMapping("/students")
-    public List<Student> getStudent(){
+    public List<StudentResponseDTO> getStudent(){
+
         return studentService.getStudents();
     }
 
-    @GetMapping("/students/{roll}")
-    public ResponseEntity<Student> getStudentByRoll(@PathVariable int roll) {
+    @GetMapping("/students/search")
+    public List<StudentResponseDTO> searchStudents(@RequestParam String name) {
+        return studentService.searchStudentsByName(name);
+    }
 
-        Student student = studentService.getStudentOrThrow(roll);
+    @GetMapping("/students/{roll}")
+    public ResponseEntity<StudentResponseDTO> getStudentByRoll(@PathVariable int roll) {
+
+        StudentResponseDTO student = studentService.getStudentOrThrow(roll);
 
         return ResponseEntity.ok(student);
     }
 
     @PutMapping("/students/{roll}")
-    public ResponseEntity<Student> updateStudent(@PathVariable int roll, @Valid @RequestBody Student updatedStudent){
-        Student student = studentService.updateStudentOrThrow(roll, updatedStudent);
+    public ResponseEntity<StudentResponseDTO> updateStudent(@PathVariable int roll, @Valid @RequestBody StudentRequestDTO updatedStudent){
+        StudentResponseDTO student = studentService.updateStudentOrThrow(roll, updatedStudent);
 
         return ResponseEntity.ok(student);
     }

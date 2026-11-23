@@ -1,9 +1,10 @@
 package com.wasqua.student_management;
 
+import com.wasqua.student_management.dto.StudentRequestDTO;
+import com.wasqua.student_management.dto.StudentResponseDTO;
 import com.wasqua.student_management.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StudentService {
@@ -14,45 +15,78 @@ public class StudentService {
         this.studentRepository = studentRepository;
     }
 
-    public Student saveStudent(Student student){
-        return studentRepository.save(student);
-    }
+    public StudentResponseDTO saveStudent(StudentRequestDTO studentRequestDTO){
 
-    public List<Student> getStudents(){
-        return studentRepository.findAll();
-    }
+        Student student = new Student(
+            studentRequestDTO.getName(),
+            studentRequestDTO.getRoll(),
+            studentRequestDTO.getDepartment()
+        );
 
-    public Optional<Student> getStudentByRoll(int roll){
-        return studentRepository.findById(roll);
-    }
+        Student savedStudent = studentRepository.save(student);
 
-    public Student getStudentOrThrow(int roll) {
-
-        Optional<Student> student = studentRepository.findById(roll);
-
-        if (student.isPresent()) {
-            return student.get();
-        }
-
-        throw new StudentNotFoundException(
-                "Student with roll number " + roll + " not found"
+        return new StudentResponseDTO(
+                savedStudent.getRoll(),
+                savedStudent.getName(),
+                savedStudent.getDepartment()
         );
     }
 
-    public Student updateStudentOrThrow(int roll, Student updatedStudent){
-        Student student = getStudentOrThrow(roll);
+    public List<StudentResponseDTO> getStudents(){
+        List<Student> students = studentRepository.findAll();
+
+        return students.stream().map(student -> new StudentResponseDTO(student.getRoll(),
+                student.getName(),
+                student.getDepartment()
+        )).toList();
+    }
+
+    public List<StudentResponseDTO> searchStudentsByName(String name) {
+        List<Student> students  = studentRepository.findByNameContainingIgnoreCase(name);
+
+        return students.stream().map(stu -> new StudentResponseDTO(stu.getRoll(), stu.getName(), stu.getDepartment()
+        )).toList();
+    }
+
+
+    private Student findStudentOrThrow(int roll) {
+        return studentRepository.findById(roll).orElseThrow(() -> new StudentNotFoundException(
+                "Student with roll number " + roll + " not found"
+        ));
+    }
+
+    public StudentResponseDTO getStudentOrThrow(int roll) {
+
+        Student student = findStudentOrThrow(roll);
+
+        return new StudentResponseDTO(
+                student.getRoll(),
+                student.getName(),
+                student.getDepartment()
+        );
+    }
+
+    public StudentResponseDTO updateStudentOrThrow(int roll, StudentRequestDTO updatedStudent) {
+
+        Student student = findStudentOrThrow(roll);
+
 
         student.setName(updatedStudent.getName());
         student.setDepartment(updatedStudent.getDepartment());
 
-        return studentRepository.save(student);
+        Student savedStudent = studentRepository.save(student);
 
+        return new StudentResponseDTO(
+                savedStudent.getRoll(),
+                savedStudent.getName(),
+                savedStudent.getDepartment()
+        );
     }
 
     public void deleteStudentOrThrow(int roll){
-        getStudentOrThrow(roll);
+        Student student = findStudentOrThrow(roll);
 
-        studentRepository.deleteById(roll);
+        studentRepository.delete(student);
     }
 
 
