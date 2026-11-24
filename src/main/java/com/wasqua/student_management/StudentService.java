@@ -5,6 +5,12 @@ import com.wasqua.student_management.dto.StudentResponseDTO;
 import com.wasqua.student_management.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+
 
 @Service
 public class StudentService {
@@ -41,6 +47,18 @@ public class StudentService {
         )).toList();
     }
 
+    public Page<StudentResponseDTO> getStudentsPaginated(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Student> students = studentRepository.findAll(pageable);
+
+        return students.map(student -> new StudentResponseDTO(
+                student.getRoll(),
+                student.getName(),
+                student.getDepartment()
+        ));
+    }
+
     public List<StudentResponseDTO> searchStudentsByName(String name) {
         List<Student> students  = studentRepository.findByNameContainingIgnoreCase(name);
 
@@ -48,6 +66,45 @@ public class StudentService {
         )).toList();
     }
 
+    public List<StudentResponseDTO> filterByDepartment(String department) {
+
+        List<Student> students =
+                studentRepository.findByDepartmentIgnoreCase(department);
+
+        return students.stream().map(student ->
+                new StudentResponseDTO(
+                        student.getRoll(),
+                        student.getName(),
+                        student.getDepartment()
+                )
+        ).toList();
+    }
+
+    public List<StudentResponseDTO> sortStudents(Sort sort) {
+
+        List<Student> students = studentRepository.findAll(sort);
+
+        return students.stream().map(student ->
+                new StudentResponseDTO(
+                        student.getRoll(),
+                        student.getName(),
+                        student.getDepartment()
+                )
+        ).toList();
+    }
+
+    public Page<StudentResponseDTO> filterStudentsPaginated(
+            String department, Pageable pageable) {
+
+        Page<Student> students =
+                studentRepository.findByDepartmentIgnoreCase(department, pageable);
+
+        return students.map(student -> new StudentResponseDTO(
+                student.getRoll(),
+                student.getName(),
+                student.getDepartment()
+        ));
+    }
 
     private Student findStudentOrThrow(int roll) {
         return studentRepository.findById(roll).orElseThrow(() -> new StudentNotFoundException(
