@@ -7,15 +7,20 @@ import java.util.List;
 import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Entity
 @Table(name = "departments")
+@Schema(description = "Department information")
 public class Department {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Unique department ID", example = "1")
     private int id;
 
     @NotBlank
+    @Schema(description = "Name of the department", example = "CSE")
     private String name;
 
     @JsonIgnore

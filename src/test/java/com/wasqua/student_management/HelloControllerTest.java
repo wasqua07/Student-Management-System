@@ -66,7 +66,7 @@ class HelloControllerTest {
                                 "departmentId": 1
                             }
                             """))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.roll").value(101))
                 .andExpect(jsonPath("$.name").value("Wasqua"))
                 .andExpect(jsonPath("$.department").value("CSE"));

@@ -13,27 +13,43 @@ import org.springframework.http.HttpMethod;
 @Configuration
 public class SecurityConfig {
 
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
+                        // Public endpoints
                         .requestMatchers("/hello", "/about").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/students/**").hasAnyRole("STUDENT", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/student", "/departments").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/students/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/students/**").hasRole("ADMIN")
+
+                        // Swagger documentation
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // Student endpoints
+                        .requestMatchers(HttpMethod.GET, "/students/**")
+                        .hasAnyRole("STUDENT", "ADMIN")
+
+                        .requestMatchers(HttpMethod.POST, "/student", "/departments")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/students/**")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.DELETE, "/students/**")
+                        .hasRole("ADMIN")
+
+                        // All remaining endpoints require authentication
                         .anyRequest().authenticated()
                 )
                 .httpBasic(basic -> {});
 
         return http.build();
     }
-
-
 
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
@@ -52,5 +68,4 @@ public class SecurityConfig {
 
         return new InMemoryUserDetailsManager(student, admin);
     }
-
 }
